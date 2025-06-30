@@ -1,0 +1,56 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn import datasets
+from sklearn.cluster import KMeans
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import silhouette_score
+
+# 设置中文字体支持
+plt.rcParams["font.family"] = ["SimHei"]
+plt.rcParams["axes.unicode_minus"] = False ?# 解决负号显示问题
+
+# 加载鸢尾花数据集
+iris = datasets.load_iris()
+X = iris.data
+y = iris.target
+feature_names = iris.feature_names
+target_names = iris.target_names
+
+# 数据标准化
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+# 设置不同的主成分数
+n_components_list = [2, 3, 4]
+results = {}
+
+for n_components in n_components_list:
+? ? # PCA降维
+? ? pca = PCA(n_components=n_components)
+? ? X_pca = pca.fit_transform(X_scaled)
+? ? 
+? ? # KMeans聚类
+? ? kmeans = KMeans(n_clusters=3, random_state=42)
+? ? clusters = kmeans.fit_predict(X_pca)
+? ? 
+? ? # 计算轮廓系数
+? ? sil_score = silhouette_score(X_pca, clusters)
+? ? 
+? ? # 保存结果
+? ? results[n_components] = {
+? ? ? ? 'X_pca': X_pca,
+? ? ? ? 'clusters': clusters,
+? ? ? ? 'explained_variance_ratio': pca.explained_variance_ratio_, ?# 确保键名正确
+? ? ? ? 'silhouette_score': sil_score
+? ? }
+? ? 
+? ? print(f"主成分数: {n_components}")
+? ? print(f"解释方差比例: {pca.explained_variance_ratio_}")
+? ? print(f"累计解释方差比例: {sum(pca.explained_variance_ratio_):.4f}")
+? ? print(f"轮廓系数: {sil_score:.4f}\n")
+? ? 
+? ? # 调试输出：确认结果字典内容
+? ? print(f"调试: results[{n_components}] 包含的键: {list(results[n_components].keys())}")
+
